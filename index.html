@@ -1,4 +1,4 @@
-
+```html
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#6b1026">
   <title>Contrôle des billets</title>
-
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
   <style>
@@ -99,6 +98,7 @@
     .btn-secondary { background: #475467; }
     .btn-green { background: var(--green); }
     .btn-orange { background: var(--orange); }
+    .btn-next { background: #475467; }
 
     .hint {
       font-size: 13px;
@@ -148,7 +148,6 @@
       color: #92400e;
     }
 
-    /* Grand message de réussite */
     #successBanner {
       display: none;
       background: #dcfce7;
@@ -257,22 +256,15 @@
              autocomplete="current-password"
              placeholder="Saisis le code d'accès">
     </div>
-    <p class="hint">
-      Ce code est nécessaire pour enregistrer une validation.
-    </p>
+    <p class="hint">Ce code est nécessaire pour enregistrer une validation.</p>
   </section>
 
   <section class="card">
     <h2>1. Scanner un billet</h2>
     <div id="reader"></div>
-
     <button id="startCamera" type="button">OUVRIR LA CAMÉRA</button>
-    <button id="stopCamera" type="button"
-            class="btn-secondary hidden">FERMER LA CAMÉRA</button>
-
-    <div id="cameraMessage">
-      Autorise la caméra si le navigateur te le demande.
-    </div>
+    <button id="stopCamera" type="button" class="btn-secondary hidden">FERMER LA CAMÉRA</button>
+    <div id="cameraMessage">Autorise la caméra si le navigateur te le demande.</div>
   </section>
 
   <section class="card">
@@ -293,9 +285,7 @@
     <h2>VALIDATION DU BILLET RÉUSSIE !</h2>
     <p>L'entrée a bien été enregistrée.</p>
     <p id="successDetail"></p>
-    <p style="margin-top:14px;font-size:13px">
-      Prêt pour le prochain billet…
-    </p>
+    <p style="margin-top:14px;font-size:13px">Prêt pour le prochain billet…</p>
   </section>
 
   <div id="message" role="status" aria-live="polite"></div>
@@ -308,12 +298,9 @@
   </section>
 </main>
 
-<footer>
-  Contrôle des billets · Accès réservé aux contrôleurs autorisés
-</footer>
+<footer>Contrôle des billets · Accès réservé aux contrôleurs autorisés</footer>
 
-<iframe name="apiFrame" title="Transmission de validation"
-        style="display:none"></iframe>
+<iframe name="apiFrame" title="Transmission de validation" style="display:none"></iframe>
 
 <script>
   const API_URL =
@@ -321,7 +308,6 @@
 
   const $ = id => document.getElementById(id);
 
-  // Seuls ces six champs sont affichés.
   const VISIBLE_FIELDS = [
     'Numéro Billet',
     'Paiement',
@@ -364,16 +350,17 @@
     successTimer = null;
   }
 
-  function showSuccess(message) {
+  function showSuccess(detail) {
     hideSuccess();
-    $('successDetail').textContent = message || '';
+    clearMessage();
+    $('successDetail').textContent = detail || '';
     $('successBanner').classList.add('visible');
+
     $('successBanner').scrollIntoView({
       behavior: 'smooth',
       block: 'center'
     });
 
-    // Laisser le message visible quelques secondes.
     successTimer = setTimeout(() => {
       hideSuccess();
     }, 4000);
@@ -387,6 +374,21 @@
     $('ticketInfo').replaceChildren();
     $('actions').replaceChildren();
     $('statusPill').textContent = '';
+  }
+
+  function prepareNextTicket() {
+    requestSequence++;
+    clearTicketInterface();
+    clearMessage();
+    hideSuccess();
+    scanLocked = false;
+
+    $('ticketCode').value = '';
+    $('cameraMessage').textContent = cameraRunning
+      ? 'Caméra active : présente le prochain QR code.'
+      : 'Tu peux scanner ou saisir le prochain billet.';
+
+    $('ticketCode').focus();
   }
 
   function jsonp(params) {
@@ -464,7 +466,6 @@
     try {
       const data = await jsonp({ action: 'search', code });
 
-      // Ignore une réponse ancienne si une autre recherche a commencé.
       if (mySequence !== requestSequence) return;
 
       if (!data || !data.success) {
@@ -480,19 +481,31 @@
 
       currentTicket = data;
       afficherBillet(data);
-      clearMessage();
 
       if (data.alreadyChecked) {
         showMessage(
-          'Attention : ce billet a déjà été validé. Nouvelle entrée bloquée.',
+          'CE BILLET A DÉJÀ ÉTÉ CONTRÔLÉ. Aucune nouvelle entrée autorisée.',
           'error'
         );
+        scanLocked = true;
+        return;
+      }
+
+      clearMessage();
+
+      // Si le paiement est déjà effectué, lancer directement
+      // la validation côté serveur, sans bouton de validation.
+      if (!data.paymentPending) {
+        await validerBillet(false, true);
       }
 
     } catch (err) {
-      showMessage(err.message || 'Erreur pendant la recherche.', 'error');
+      if (mySequence === requestSequence) {
+        showMessage(err.message || 'Erreur pendant la recherche.', 'error');
+      }
     } finally {
       setBusy(false);
+      if (!currentTicket && !busy) scanLocked = false;
     }
   }
 
@@ -508,14 +521,13 @@
       pill.textContent = 'PAIEMENT EN ATTENTE';
       pill.className = 'status-pill pending';
     } else {
-      pill.textContent = 'BILLET NON VALIDÉ';
+      pill.textContent = 'PAIEMENT ENREGISTRÉ';
       pill.className = 'status-pill ok';
     }
 
     const info = $('ticketInfo');
     info.replaceChildren();
 
-    // On affiche uniquement les champs choisis, dans cet ordre.
     VISIBLE_FIELDS.forEach(header => {
       const matchingHeader = (ticket.headers || []).find(
         h => String(h).trim().toLowerCase() === header.toLowerCase()
@@ -553,21 +565,35 @@
       const note = document.createElement('p');
       note.className = 'hint';
       note.textContent =
-        'Ce billet a déjà été validé. Aucune nouvelle entrée autorisée.';
+        'Ce billet a déjà été validé. Il faut contrôler le billet suivant.';
       actions.appendChild(note);
+
+      ajouterBouton(
+        actions,
+        'PASSER AU BILLET SUIVANT',
+        'btn-next',
+        prepareNextTicket
+      );
       return;
     }
 
     if (ticket.paymentPending) {
-      ajouterBouton(actions, 'VALIDER AVEC PAIEMENT',
-        'btn-green', () => validerBillet(true));
+      ajouterBouton(
+        actions,
+        'VALIDER AVEC PAIEMENT',
+        'btn-green',
+        () => validerBillet(true)
+      );
 
-      ajouterBouton(actions, 'VALIDER SANS PAIEMENT',
-        'btn-orange', () => validerBillet(false));
-    } else {
-      ajouterBouton(actions, "VALIDER L'ENTRÉE",
-        'btn-green', () => validerBillet(false));
+      ajouterBouton(
+        actions,
+        'VALIDER SANS PAIEMENT',
+        'btn-orange',
+        () => validerBillet(false)
+      );
     }
+    // Un billet déjà payé est validé automatiquement après la recherche.
+    // Aucun bouton de validation ne doit être affiché dans ce cas.
   }
 
   function ajouterBouton(parent, text, className, callback) {
@@ -579,7 +605,7 @@
     parent.appendChild(button);
   }
 
-  async function validerBillet(payerNow) {
+  async function validerBillet(payerNow, calledAutomatically = false) {
     if (busy || !currentCode || !currentTicket) return;
 
     if (currentTicket.alreadyChecked) {
@@ -598,12 +624,7 @@
       return;
     }
 
-    const confirmation = payerNow
-      ? 'Confirmer le paiement et valider l’entrée de ce billet ?'
-      : 'Confirmer la validation de l’entrée sans encaisser le paiement ?';
-
-    if (!window.confirm(confirmation)) return;
-
+    // Aucune fenêtre de confirmation : l'action part directement.
     setBusy(true);
     showMessage('Enregistrement de la validation…', 'info');
 
@@ -664,25 +685,23 @@
         return;
       }
 
-      // Vider immédiatement les données affichées.
       clearTicketInterface();
       clearMessage();
 
-      // Grand message vert de confirmation.
       showSuccess(
         'Billet ' + codeBeingValidated +
         (payerNow ? ' · Paiement enregistré' : '')
       );
 
-      // La caméra reste ouverte. On évite qu'un scan automatique
-      // soit accepté pendant l'affichage du message de réussite.
       scanLocked = true;
 
       setTimeout(() => {
-        scanLocked = false;
-        $('cameraMessage').textContent = cameraRunning
-          ? 'Caméra active : présente le prochain QR code.'
-          : 'Tu peux scanner ou saisir le prochain billet.';
+        if (!currentTicket && !busy) {
+          scanLocked = false;
+          $('cameraMessage').textContent = cameraRunning
+            ? 'Caméra active : présente le prochain QR code.'
+            : 'Tu peux scanner ou saisir le prochain billet.';
+        }
       }, 1800);
 
     } catch (err) {
@@ -698,11 +717,20 @@
   async function verifierStatutAprèsErreur(code) {
     try {
       const data = await jsonp({ action: 'search', code });
+
       if (data && data.success && data.found) {
         currentCode = code;
         currentTicket = data;
         $('ticketCode').value = code;
         afficherBillet(data);
+
+        if (data.alreadyChecked) {
+          showMessage(
+            'CE BILLET A DÉJÀ ÉTÉ CONTRÔLÉ. Aucune nouvelle entrée autorisée.',
+            'error'
+          );
+          scanLocked = true;
+        }
       }
     } catch (_) {
       // Le message d'erreur initial reste visible.
@@ -735,8 +763,7 @@
           }
         },
         async decodedText => {
-          // Empêche plusieurs traitements du même scan.
-          if (scanLocked || busy) return;
+          if (scanLocked || busy || currentTicket) return;
 
           scanLocked = true;
           const code = String(decodedText || '').trim();
@@ -746,18 +773,17 @@
             return;
           }
 
-          try {
-            await rechercherBillet(code);
-          } finally {
-            // Si un billet a été trouvé, attendre une action du contrôleur.
-            // Si la recherche échoue, autoriser un nouveau scan après un délai.
+          await rechercherBillet(code);
+
+          // En cas de billet inconnu ou d'erreur, réautoriser un scan.
+          if (!currentTicket && !busy) {
             setTimeout(() => {
               if (!currentTicket && !busy) scanLocked = false;
-            }, 1200);
+            }, 1000);
           }
         },
         () => {
-          // Absence de QR détecté : comportement normal pendant le scan.
+          // Aucun QR détecté : fonctionnement normal.
         }
       );
 
@@ -819,3 +845,4 @@
 </script>
 </body>
 </html>
+```
