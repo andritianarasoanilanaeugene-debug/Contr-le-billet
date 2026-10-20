@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -493,12 +492,6 @@
 
       clearMessage();
 
-      // Si le paiement est déjà effectué, lancer directement
-      // la validation côté serveur, sans bouton de validation.
-      if (!data.paymentPending) {
-        await validerBillet(false, true);
-      }
-
     } catch (err) {
       if (mySequence === requestSequence) {
         showMessage(err.message || 'Erreur pendant la recherche.', 'error');
@@ -591,9 +584,14 @@
         'btn-orange',
         () => validerBillet(false)
       );
+    } else {
+      ajouterBouton(
+        actions,
+        'VALIDER LE BILLET',
+        'btn-green',
+        () => validerBillet(false)
+      );
     }
-    // Un billet déjà payé est validé automatiquement après la recherche.
-    // Aucun bouton de validation ne doit être affiché dans ce cas.
   }
 
   function ajouterBouton(parent, text, className, callback) {
@@ -605,7 +603,7 @@
     parent.appendChild(button);
   }
 
-  async function validerBillet(payerNow, calledAutomatically = false) {
+  async function validerBillet(payerNow) {
     if (busy || !currentCode || !currentTicket) return;
 
     if (currentTicket.alreadyChecked) {
@@ -624,7 +622,7 @@
       return;
     }
 
-    // Aucune fenêtre de confirmation : l'action part directement.
+    // Pas de confirm() : le clic déclenche directement la validation.
     setBusy(true);
     showMessage('Enregistrement de la validation…', 'info');
 
@@ -693,6 +691,7 @@
         (payerNow ? ' · Paiement enregistré' : '')
       );
 
+      // Garder la caméra active, puis autoriser le scan suivant.
       scanLocked = true;
 
       setTimeout(() => {
@@ -775,7 +774,6 @@
 
           await rechercherBillet(code);
 
-          // En cas de billet inconnu ou d'erreur, réautoriser un scan.
           if (!currentTicket && !busy) {
             setTimeout(() => {
               if (!currentTicket && !busy) scanLocked = false;
@@ -845,4 +843,3 @@
 </script>
 </body>
 </html>
-```
