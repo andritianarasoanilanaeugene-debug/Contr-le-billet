@@ -1,0 +1,859 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#6b1026">
+
+  <title>Contrôle des billets</title>
+
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+  <style>
+    :root {
+      --burgundy: #6b1026;
+      --burgundy-light: #8f1d3e;
+      --green: #16834a;
+      --red: #c62828;
+      --gray: #667085;
+      --border: #e5e7eb;
+      --background: #f5f5f7;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--background);
+      color: #222;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    header {
+      padding: 25px 16px 30px;
+      background: linear-gradient(
+        135deg,
+        var(--burgundy),
+        var(--burgundy-light)
+      );
+      color: white;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0 0 8px;
+      font-size: 25px;
+    }
+
+    header p {
+      margin: 0;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    main {
+      width: min(100% - 24px, 600px);
+      margin: 20px auto 40px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 15px;
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+    }
+
+    h2 {
+      font-size: 18px;
+      margin: 0 0 14px;
+      color: var(--burgundy);
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 7px;
+    }
+
+    input {
+      width: 100%;
+      padding: 13px;
+      font-size: 16px;
+      border: 1px solid #cfd4dc;
+      border-radius: 9px;
+      outline: none;
+      background: white;
+      color: #222;
+    }
+
+    input:focus {
+      border-color: var(--burgundy-light);
+      box-shadow: 0 0 0 3px rgba(143, 29, 62, 0.1);
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    button {
+      width: 100%;
+      border: none;
+      border-radius: 9px;
+      padding: 14px 12px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 9px;
+      color: white;
+      background: var(--burgundy);
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: #475467;
+    }
+
+    .btn-green {
+      background: var(--green);
+    }
+
+    .btn-orange {
+      background: #b45309;
+    }
+
+    .btn-red {
+      background: var(--red);
+    }
+
+    .hint {
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--gray);
+      margin: 10px 0 0;
+    }
+
+    #reader {
+      width: 100%;
+      overflow: hidden;
+      border-radius: 10px;
+    }
+
+    #cameraMessage {
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--gray);
+      margin-top: 10px;
+    }
+
+    #message {
+      display: none;
+      border-radius: 10px;
+      padding: 13px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    #message.info {
+      display: block;
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    #message.success {
+      display: block;
+      background: #e9f8ef;
+      color: #166534;
+    }
+
+    #message.error {
+      display: block;
+      background: #fef0f0;
+      color: #b42318;
+    }
+
+    #message.warning {
+      display: block;
+      background: #fff5df;
+      color: #92400e;
+    }
+
+    #resultCard {
+      display: none;
+    }
+
+    .status-pill {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      background: #f2f4f7;
+      color: #344054;
+    }
+
+    .status-pill.ok {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .status-pill.bad {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .status-pill.pending {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .info-row {
+      padding: 11px 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      overflow-wrap: anywhere;
+    }
+
+    .info-row:last-child {
+      border-bottom: none;
+    }
+
+    .info-label {
+      font-size: 12px;
+      color: var(--gray);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .info-value {
+      font-size: 15px;
+      line-height: 1.45;
+      word-break: break-word;
+    }
+
+    .info-value a {
+      color: var(--burgundy-light);
+      overflow-wrap: anywhere;
+    }
+
+    #actions {
+      margin-top: 15px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    footer {
+      text-align: center;
+      color: var(--gray);
+      font-size: 12px;
+      padding: 0 15px 25px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>Contrôle des billets</h1>
+  <p>Scanne un billet pour vérifier son accès</p>
+</header>
+
+<main>
+
+  <section class="card">
+    <h2>Code d'accès</h2>
+
+    <div class="field">
+      <label for="pin">Code d'accès du contrôleur</label>
+      <input
+        id="pin"
+        type="password"
+        autocomplete="current-password"
+        placeholder="Saisis le code d'accès"
+      >
+    </div>
+
+    <p class="hint">
+      Ce code est nécessaire pour enregistrer une validation.
+      Il ne doit pas être partagé avec les visiteurs.
+    </p>
+  </section>
+
+  <section class="card">
+    <h2>1. Scanner un billet</h2>
+
+    <div id="reader"></div>
+
+    <button id="startCamera" type="button">
+      OUVRIR LA CAMÉRA
+    </button>
+
+    <button
+      id="stopCamera"
+      type="button"
+      class="btn-secondary hidden"
+    >
+      FERMER LA CAMÉRA
+    </button>
+
+    <div id="cameraMessage">
+      Autorise l'accès à la caméra si le navigateur te le demande.
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>2. Ou saisir le code manuellement</h2>
+
+    <div class="field">
+      <label for="ticketCode">Code complet du billet</label>
+      <input
+        id="ticketCode"
+        type="text"
+        placeholder="Colle ici le contenu du QR code"
+        autocomplete="off"
+        autocapitalize="off"
+        spellcheck="false"
+      >
+    </div>
+
+    <button id="searchButton" type="button">
+      RECHERCHER LE BILLET
+    </button>
+  </section>
+
+  <div id="message" role="status" aria-live="polite"></div>
+
+  <section id="resultCard" class="card">
+    <h2>Informations du billet</h2>
+
+    <div id="statusPill" class="status-pill"></div>
+    <div id="ticketInfo"></div>
+
+    <div id="actions"></div>
+  </section>
+
+</main>
+
+<footer>
+  Contrôle des billets · Accès réservé aux contrôleurs autorisés
+</footer>
+
+<!-- Cible cachée pour envoyer les formulaires sans quitter la page. -->
+<iframe
+  name="apiFrame"
+  title="Transmission de validation"
+  style="display:none"
+></iframe>
+
+<script>
+  const API_URL =
+    'https://script.google.com/macros/s/AKfycbzv9Qfz0AtG_n-BrZiTrpGNBjInEawJx6O28a1n1bQ4wM6Y4Dmvp8rrVugKF9XzIDxC/exec';
+
+  const $ = id => document.getElementById(id);
+
+  let currentCode = '';
+  let currentTicket = null;
+  let scanner = null;
+  let cameraRunning = false;
+  let busy = false;
+
+  function showMessage(text, type = 'info') {
+    const box = $('message');
+    box.textContent = text;
+    box.className = type;
+    box.style.display = 'block';
+  }
+
+  function clearMessage() {
+    $('message').textContent = '';
+    $('message').className = '';
+    $('message').style.display = 'none';
+  }
+
+  function setBusy(value) {
+    busy = value;
+    $('searchButton').disabled = value;
+    $('startCamera').disabled = value;
+  }
+
+  /**
+   * Appel de lecture JSONP :
+   * permet de récupérer les informations depuis Apps Script
+   * sans utiliser fetch/CORS.
+   */
+  function jsonp(params) {
+    return new Promise((resolve, reject) => {
+      const callback =
+        'cb_' + Date.now() + '_' +
+        Math.random().toString(36).slice(2);
+
+      const script = document.createElement('script');
+      const url = new URL(API_URL);
+
+      Object.entries(params).forEach(([key, value]) => {
+        url.searchParams.set(key, String(value));
+      });
+
+      url.searchParams.set('callback', callback);
+
+      let finished = false;
+
+      const cleanup = () => {
+        delete window[callback];
+        script.remove();
+      };
+
+      const timeout = setTimeout(() => {
+        if (finished) return;
+        finished = true;
+        cleanup();
+        reject(new Error(
+          'Le serveur ne répond pas. Vérifie la connexion Internet et le déploiement Apps Script.'
+        ));
+      }, 15000);
+
+      window[callback] = data => {
+        if (finished) return;
+        finished = true;
+        clearTimeout(timeout);
+        cleanup();
+        resolve(data);
+      };
+
+      script.onerror = () => {
+        if (finished) return;
+        finished = true;
+        clearTimeout(timeout);
+        cleanup();
+        reject(new Error(
+          'Impossible de joindre le serveur de billets.'
+        ));
+      };
+
+      script.src = url.toString();
+      document.head.appendChild(script);
+    });
+  }
+
+  async function rechercherBillet(code) {
+    code = String(code || '').trim();
+
+    if (!code) {
+      showMessage('Scanne un billet ou saisis son code complet.', 'warning');
+      return;
+    }
+
+    if (busy) return;
+
+    setBusy(true);
+    currentCode = code;
+    $('ticketCode').value = code;
+    $('resultCard').style.display = 'none';
+    clearMessage();
+
+    showMessage('Recherche du billet en cours…', 'info');
+
+    try {
+      const data = await jsonp({
+        action: 'search',
+        code: code
+      });
+
+      if (!data || !data.success) {
+        throw new Error(
+          data && data.message
+            ? data.message
+            : 'La recherche a échoué.'
+        );
+      }
+
+      if (!data.found) {
+        currentTicket = null;
+        $('resultCard').style.display = 'none';
+        showMessage(data.message || 'Billet introuvable.', 'error');
+        return;
+      }
+
+      currentTicket = data;
+      afficherBillet(data);
+      clearMessage();
+
+      if (data.alreadyChecked) {
+        showMessage(
+          'Attention : ce billet a déjà été validé. Une seconde entrée est bloquée.',
+          'error'
+        );
+      } else {
+        showMessage('Billet trouvé.', 'success');
+      }
+
+    } catch (err) {
+      showMessage(
+        err.message || 'Erreur pendant la recherche.',
+        'error'
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function afficherBillet(ticket) {
+    $('resultCard').style.display = 'block';
+
+    const pill = $('statusPill');
+    const payment = String(ticket.payment || '').trim();
+    const checked = ticket.alreadyChecked;
+
+    if (checked) {
+      pill.textContent = 'BILLET DÉJÀ VALIDÉ';
+      pill.className = 'status-pill bad';
+    } else if (ticket.paymentPending) {
+      pill.textContent = 'PAIEMENT EN ATTENTE';
+      pill.className = 'status-pill pending';
+    } else {
+      pill.textContent = 'BILLET NON VALIDÉ';
+      pill.className = 'status-pill ok';
+    }
+
+    const info = $('ticketInfo');
+    info.replaceChildren();
+
+    (ticket.headers || []).forEach(header => {
+      const value = ticket.values
+        ? ticket.values[header]
+        : '';
+
+      const row = document.createElement('div');
+      row.className = 'info-row';
+
+      const label = document.createElement('div');
+      label.className = 'info-label';
+      label.textContent = header;
+
+      const content = document.createElement('div');
+      content.className = 'info-value';
+
+      if (
+        String(header).trim().toLowerCase() === 'qr code' &&
+        /^https?:\/\//i.test(String(value || ''))
+      ) {
+        const link = document.createElement('a');
+        link.href = String(value);
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.textContent = 'Ouvrir le QR code';
+        content.appendChild(link);
+      } else {
+        content.textContent =
+          value === null || value === undefined || value === ''
+            ? '—'
+            : String(value);
+      }
+
+      row.appendChild(label);
+      row.appendChild(content);
+      info.appendChild(row);
+    });
+
+    afficherActions(ticket);
+  }
+
+  function afficherActions(ticket) {
+    const actions = $('actions');
+    actions.replaceChildren();
+
+    if (ticket.alreadyChecked) {
+      const note = document.createElement('p');
+      note.className = 'hint';
+      note.textContent =
+        'Aucune nouvelle validation n’est autorisée pour ce billet.';
+      actions.appendChild(note);
+      return;
+    }
+
+    if (ticket.paymentPending) {
+      ajouterBouton(
+        actions,
+        'VALIDER AVEC PAIEMENT',
+        'btn-green',
+        () => validerBillet(true)
+      );
+
+      ajouterBouton(
+        actions,
+        'VALIDER SANS PAIEMENT',
+        'btn-orange',
+        () => validerBillet(false)
+      );
+    } else {
+      ajouterBouton(
+        actions,
+        "VALIDER L'ENTRÉE",
+        'btn-green',
+        () => validerBillet(false)
+      );
+    }
+  }
+
+  function ajouterBouton(parent, text, className, callback) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = text;
+    button.className = className;
+    button.addEventListener('click', callback);
+    parent.appendChild(button);
+  }
+
+  /**
+   * Envoie une requête POST dans une iframe cachée.
+   * Ensuite, interroge l'API jusqu'à réception du résultat.
+   */
+  async function validerBillet(payerNow) {
+    if (busy) return;
+
+    if (!currentCode || !currentTicket) {
+      showMessage('Aucun billet sélectionné.', 'error');
+      return;
+    }
+
+    if (currentTicket.alreadyChecked) {
+      showMessage('Ce billet est déjà validé.', 'error');
+      return;
+    }
+
+    const pin = $('pin').value.trim();
+
+    if (!pin) {
+      showMessage(
+        'Saisis le code d’accès du contrôleur avant de valider.',
+        'warning'
+      );
+      $('pin').focus();
+      return;
+    }
+
+    const confirmation = payerNow
+      ? 'Confirmer le paiement et valider l’entrée de ce billet ?'
+      : 'Confirmer la validation de l’entrée sans encaisser le paiement ?';
+
+    if (!window.confirm(confirmation)) return;
+
+    setBusy(true);
+    showMessage('Enregistrement de la validation…', 'info');
+
+    const requestId =
+      'req_' + Date.now() + '_' +
+      Math.random().toString(36).slice(2);
+
+    try {
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = API_URL;
+      form.target = 'apiFrame';
+      form.style.display = 'none';
+
+      const fields = {
+        action: 'validate',
+        requestId: requestId,
+        code: currentCode,
+        payerNow: payerNow ? 'true' : 'false',
+        pin: pin
+      };
+
+      Object.entries(fields).forEach(([name, value]) => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = name;
+        input.value = value;
+        form.appendChild(input);
+      });
+
+      document.body.appendChild(form);
+      form.submit();
+      form.remove();
+
+      // Le résultat est récupéré séparément, car une page GitHub
+      // ne peut pas lire directement la réponse d'un formulaire
+      // envoyé vers un autre domaine.
+      let result = null;
+
+      for (let attempt = 0; attempt < 18; attempt++) {
+        await new Promise(resolve => setTimeout(resolve, 700));
+
+        result = await jsonp({
+          action: 'result',
+          requestId: requestId
+        });
+
+        if (result && !result.pending) break;
+      }
+
+      if (!result || result.pending) {
+        throw new Error(
+          'La réponse du serveur tarde à arriver. Recherche de nouveau le billet pour vérifier son statut avant de réessayer.'
+        );
+      }
+
+      if (!result.success) {
+        showMessage(
+          result.message || 'La validation a échoué.',
+          'error'
+        );
+        await rechercherAprèsValidation();
+        return;
+      }
+
+      showMessage(result.message || 'Billet validé.', 'success');
+
+      // Recharge les données depuis Google Sheets afin d'afficher
+      // le nouveau statut et de supprimer les boutons de validation.
+      await rechercherAprèsValidation();
+
+    } catch (err) {
+      showMessage(
+        err.message || 'Erreur pendant la validation.',
+        'error'
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function rechercherAprèsValidation() {
+    const code = currentCode;
+
+    try {
+      const data = await jsonp({
+        action: 'search',
+        code: code
+      });
+
+      if (data && data.success && data.found) {
+        currentTicket = data;
+        afficherBillet(data);
+      }
+    } catch (err) {
+      // Le résultat de validation reste affiché si le rafraîchissement
+      // des informations échoue temporairement.
+    }
+  }
+
+  async function ouvrirCamera() {
+    if (cameraRunning) return;
+
+    if (typeof Html5Qrcode === 'undefined') {
+      showMessage(
+        'Le lecteur QR code ne s’est pas chargé. Vérifie la connexion Internet et recharge la page.',
+        'error'
+      );
+      return;
+    }
+
+    $('cameraMessage').textContent =
+      'Demande d’accès à la caméra…';
+
+    try {
+      scanner = new Html5Qrcode('reader');
+
+      await scanner.start(
+        { facingMode: 'environment' },
+        {
+          fps: 10,
+          qrbox: function(viewWidth, viewHeight) {
+            const size = Math.floor(
+              Math.min(viewWidth, viewHeight, 280)
+            );
+            return { width: size, height: size };
+          }
+        },
+        async decodedText => {
+          if (busy) return;
+
+          const code = String(decodedText || '').trim();
+          if (!code) return;
+
+          await fermerCamera();
+          $('ticketCode').value = code;
+          await rechercherBillet(code);
+        },
+        () => {
+          // Les erreurs de lecture d'une image sont normales
+          // tant qu'aucun QR code n'est détecté.
+        }
+      );
+
+      cameraRunning = true;
+      $('startCamera').classList.add('hidden');
+      $('stopCamera').classList.remove('hidden');
+      $('cameraMessage').textContent =
+        'Caméra active : place le QR code dans le cadre.';
+
+    } catch (err) {
+      scanner = null;
+      cameraRunning = false;
+
+      $('cameraMessage').textContent =
+        'Impossible d’ouvrir la caméra. Vérifie l’autorisation du navigateur, utilise le site HTTPS de GitHub Pages et ferme les autres applications qui utilisent la caméra.';
+
+      showMessage(
+        'La caméra ne peut pas être ouverte. Tu peux saisir le code du billet manuellement.',
+        'error'
+      );
+    }
+  }
+
+  async function fermerCamera() {
+    if (!scanner || !cameraRunning) {
+      $('startCamera').classList.remove('hidden');
+      $('stopCamera').classList.add('hidden');
+      return;
+    }
+
+    try {
+      await scanner.stop();
+      await scanner.clear();
+    } catch (err) {
+      // On réinitialise tout de même l'interface.
+    }
+
+    scanner = null;
+    cameraRunning = false;
+
+    $('startCamera').classList.remove('hidden');
+    $('stopCamera').classList.add('hidden');
+    $('cameraMessage').textContent =
+      'Caméra arrêtée.';
+  }
+
+  $('startCamera').addEventListener('click', ouvrirCamera);
+  $('stopCamera').addEventListener('click', fermerCamera);
+
+  $('searchButton').addEventListener('click', () => {
+    rechercherBillet($('ticketCode').value);
+  });
+
+  $('ticketCode').addEventListener('keydown', event => {
+    if (event.key === 'Enter') {
+      rechercherBillet($('ticketCode').value);
+    }
+  });
+</script>
+
+</body>
+</html>
