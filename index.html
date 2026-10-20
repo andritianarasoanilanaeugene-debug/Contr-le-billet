@@ -5,7 +5,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#6b1026">
-
   <title>Contrôle des billets</title>
 
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -15,15 +14,14 @@
       --burgundy: #6b1026;
       --burgundy-light: #8f1d3e;
       --green: #16834a;
-      --red: #c62828;
+      --red: #b42318;
+      --orange: #b45309;
       --gray: #667085;
       --border: #e5e7eb;
       --background: #f5f5f7;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -33,26 +31,14 @@
     }
 
     header {
-      padding: 25px 16px 30px;
-      background: linear-gradient(
-        135deg,
-        var(--burgundy),
-        var(--burgundy-light)
-      );
+      padding: 25px 16px 28px;
+      background: linear-gradient(135deg, var(--burgundy), var(--burgundy-light));
       color: white;
       text-align: center;
     }
 
-    header h1 {
-      margin: 0 0 8px;
-      font-size: 25px;
-    }
-
-    header p {
-      margin: 0;
-      font-size: 14px;
-      opacity: 0.9;
-    }
+    header h1 { margin: 0 0 8px; font-size: 25px; }
+    header p { margin: 0; font-size: 14px; }
 
     main {
       width: min(100% - 24px, 600px);
@@ -64,7 +50,7 @@
       border-radius: 15px;
       padding: 18px;
       margin-bottom: 16px;
-      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+      box-shadow: 0 3px 12px rgba(0,0,0,.06);
     }
 
     h2 {
@@ -87,18 +73,14 @@
       border: 1px solid #cfd4dc;
       border-radius: 9px;
       outline: none;
-      background: white;
-      color: #222;
     }
 
     input:focus {
       border-color: var(--burgundy-light);
-      box-shadow: 0 0 0 3px rgba(143, 29, 62, 0.1);
+      box-shadow: 0 0 0 3px rgba(143,29,62,.1);
     }
 
-    .field {
-      margin-bottom: 14px;
-    }
+    .field { margin-bottom: 14px; }
 
     button {
       width: 100%;
@@ -113,26 +95,10 @@
       background: var(--burgundy);
     }
 
-    button:disabled {
-      opacity: 0.55;
-      cursor: not-allowed;
-    }
-
-    .btn-secondary {
-      background: #475467;
-    }
-
-    .btn-green {
-      background: var(--green);
-    }
-
-    .btn-orange {
-      background: #b45309;
-    }
-
-    .btn-red {
-      background: var(--red);
-    }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+    .btn-secondary { background: #475467; }
+    .btn-green { background: var(--green); }
+    .btn-orange { background: var(--orange); }
 
     .hint {
       font-size: 13px;
@@ -170,12 +136,6 @@
       color: #1d4ed8;
     }
 
-    #message.success {
-      display: block;
-      background: #e9f8ef;
-      color: #166534;
-    }
-
     #message.error {
       display: block;
       background: #fef0f0;
@@ -188,13 +148,50 @@
       color: #92400e;
     }
 
-    #resultCard {
+    /* Grand message de réussite */
+    #successBanner {
       display: none;
+      background: #dcfce7;
+      color: #166534;
+      border: 2px solid #86d6a0;
+      border-radius: 16px;
+      padding: 28px 16px;
+      margin-bottom: 18px;
+      text-align: center;
+      box-shadow: 0 4px 16px rgba(22,131,74,.12);
     }
+
+    #successBanner.visible { display: block; }
+
+    #successIcon {
+      font-size: 56px;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+
+    #successBanner h2 {
+      color: #166534;
+      font-size: 24px;
+      line-height: 1.3;
+      margin: 0 0 10px;
+    }
+
+    #successBanner p {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    #successDetail {
+      margin-top: 12px !important;
+      font-weight: 700;
+    }
+
+    #resultCard { display: none; }
 
     .status-pill {
       display: inline-block;
-      padding: 6px 10px;
+      padding: 7px 11px;
       border-radius: 20px;
       font-size: 12px;
       font-weight: 700;
@@ -203,23 +200,12 @@
       color: #344054;
     }
 
-    .status-pill.ok {
-      background: #dcfce7;
-      color: #166534;
-    }
-
-    .status-pill.bad {
-      background: #fee2e2;
-      color: #991b1b;
-    }
-
-    .status-pill.pending {
-      background: #fef3c7;
-      color: #92400e;
-    }
+    .status-pill.ok { background: #dcfce7; color: #166534; }
+    .status-pill.bad { background: #fee2e2; color: #991b1b; }
+    .status-pill.pending { background: #fef3c7; color: #92400e; }
 
     .info-row {
-      padding: 11px 0;
+      padding: 12px 0;
       border-bottom: 1px solid var(--border);
       display: flex;
       flex-direction: column;
@@ -227,36 +213,25 @@
       overflow-wrap: anywhere;
     }
 
-    .info-row:last-child {
-      border-bottom: none;
-    }
+    .info-row:last-child { border-bottom: none; }
 
     .info-label {
       font-size: 12px;
       color: var(--gray);
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.3px;
+      letter-spacing: .3px;
     }
 
     .info-value {
-      font-size: 15px;
+      font-size: 16px;
       line-height: 1.45;
+      font-weight: 600;
       word-break: break-word;
     }
 
-    .info-value a {
-      color: var(--burgundy-light);
-      overflow-wrap: anywhere;
-    }
-
-    #actions {
-      margin-top: 15px;
-    }
-
-    .hidden {
-      display: none !important;
-    }
+    #actions { margin-top: 15px; }
+    .hidden { display: none !important; }
 
     footer {
       text-align: center;
@@ -268,110 +243,102 @@
 </head>
 
 <body>
-
 <header>
   <h1>Contrôle des billets</h1>
   <p>Scanne un billet pour vérifier son accès</p>
 </header>
 
 <main>
-
   <section class="card">
     <h2>Code d'accès</h2>
-
     <div class="field">
       <label for="pin">Code d'accès du contrôleur</label>
-      <input
-        id="pin"
-        type="password"
-        autocomplete="current-password"
-        placeholder="Saisis le code d'accès"
-      >
+      <input id="pin" type="password"
+             autocomplete="current-password"
+             placeholder="Saisis le code d'accès">
     </div>
-
     <p class="hint">
       Ce code est nécessaire pour enregistrer une validation.
-      Il ne doit pas être partagé avec les visiteurs.
     </p>
   </section>
 
   <section class="card">
     <h2>1. Scanner un billet</h2>
-
     <div id="reader"></div>
 
-    <button id="startCamera" type="button">
-      OUVRIR LA CAMÉRA
-    </button>
-
-    <button
-      id="stopCamera"
-      type="button"
-      class="btn-secondary hidden"
-    >
-      FERMER LA CAMÉRA
-    </button>
+    <button id="startCamera" type="button">OUVRIR LA CAMÉRA</button>
+    <button id="stopCamera" type="button"
+            class="btn-secondary hidden">FERMER LA CAMÉRA</button>
 
     <div id="cameraMessage">
-      Autorise l'accès à la caméra si le navigateur te le demande.
+      Autorise la caméra si le navigateur te le demande.
     </div>
   </section>
 
   <section class="card">
-    <h2>2. Ou saisir le code manuellement</h2>
-
+    <h2>2. Saisir le code manuellement</h2>
     <div class="field">
       <label for="ticketCode">Code complet du billet</label>
-      <input
-        id="ticketCode"
-        type="text"
-        placeholder="Colle ici le contenu du QR code"
-        autocomplete="off"
-        autocapitalize="off"
-        spellcheck="false"
-      >
+      <input id="ticketCode" type="text"
+             placeholder="Contenu du QR code"
+             autocomplete="off"
+             autocapitalize="off"
+             spellcheck="false">
     </div>
+    <button id="searchButton" type="button">RECHERCHER LE BILLET</button>
+  </section>
 
-    <button id="searchButton" type="button">
-      RECHERCHER LE BILLET
-    </button>
+  <section id="successBanner" role="status" aria-live="polite">
+    <div id="successIcon">✓</div>
+    <h2>VALIDATION DU BILLET RÉUSSIE !</h2>
+    <p>L'entrée a bien été enregistrée.</p>
+    <p id="successDetail"></p>
+    <p style="margin-top:14px;font-size:13px">
+      Prêt pour le prochain billet…
+    </p>
   </section>
 
   <div id="message" role="status" aria-live="polite"></div>
 
   <section id="resultCard" class="card">
     <h2>Informations du billet</h2>
-
     <div id="statusPill" class="status-pill"></div>
     <div id="ticketInfo"></div>
-
     <div id="actions"></div>
   </section>
-
 </main>
 
 <footer>
   Contrôle des billets · Accès réservé aux contrôleurs autorisés
 </footer>
 
-<!-- Cible cachée pour envoyer les formulaires sans quitter la page. -->
-<iframe
-  name="apiFrame"
-  title="Transmission de validation"
-  style="display:none"
-></iframe>
+<iframe name="apiFrame" title="Transmission de validation"
+        style="display:none"></iframe>
 
 <script>
   const API_URL =
-    'https://script.google.com/macros/s/AKfycbyIFHsHTkOlGR-pBLhNc7kHjglAixtX4k1qFXCJq2SIogHvevfwfEZX6m2usmlPMSNj/exec';
+    'https://script.google.com/macros/s/AKfycbzv9Qfz0AtG_n-BrZiTrpGNBjInEawJx6O28a1n1bQ4wM6Y4Dmvp8rrVugKF9XzIDxC/exec';
 
   const $ = id => document.getElementById(id);
+
+  // Seuls ces six champs sont affichés.
+  const VISIBLE_FIELDS = [
+    'Numéro Billet',
+    'Paiement',
+    'Responsable',
+    'Client',
+    'Billet',
+    'Statut Check'
+  ];
 
   let currentCode = '';
   let currentTicket = null;
   let scanner = null;
   let cameraRunning = false;
   let busy = false;
+  let scanLocked = false;
+  let successTimer = null;
+  let requestSequence = 0;
 
   function showMessage(text, type = 'info') {
     const box = $('message');
@@ -389,14 +356,39 @@
   function setBusy(value) {
     busy = value;
     $('searchButton').disabled = value;
-    $('startCamera').disabled = value;
   }
 
-  /**
-   * Appel de lecture JSONP :
-   * permet de récupérer les informations depuis Apps Script
-   * sans utiliser fetch/CORS.
-   */
+  function hideSuccess() {
+    $('successBanner').classList.remove('visible');
+    if (successTimer) clearTimeout(successTimer);
+    successTimer = null;
+  }
+
+  function showSuccess(message) {
+    hideSuccess();
+    $('successDetail').textContent = message || '';
+    $('successBanner').classList.add('visible');
+    $('successBanner').scrollIntoView({
+      behavior: 'smooth',
+      block: 'center'
+    });
+
+    // Laisser le message visible quelques secondes.
+    successTimer = setTimeout(() => {
+      hideSuccess();
+    }, 4000);
+  }
+
+  function clearTicketInterface() {
+    currentCode = '';
+    currentTicket = null;
+    $('ticketCode').value = '';
+    $('resultCard').style.display = 'none';
+    $('ticketInfo').replaceChildren();
+    $('actions').replaceChildren();
+    $('statusPill').textContent = '';
+  }
+
   function jsonp(params) {
     return new Promise((resolve, reject) => {
       const callback =
@@ -414,17 +406,17 @@
 
       let finished = false;
 
-      const cleanup = () => {
+      function cleanup() {
         delete window[callback];
         script.remove();
-      };
+      }
 
       const timeout = setTimeout(() => {
         if (finished) return;
         finished = true;
         cleanup();
         reject(new Error(
-          'Le serveur ne répond pas. Vérifie la connexion Internet et le déploiement Apps Script.'
+          'Le serveur ne répond pas. Vérifie la connexion et le déploiement Apps Script.'
         ));
       }, 15000);
 
@@ -441,9 +433,7 @@
         finished = true;
         clearTimeout(timeout);
         cleanup();
-        reject(new Error(
-          'Impossible de joindre le serveur de billets.'
-        ));
+        reject(new Error('Impossible de joindre le serveur de billets.'));
       };
 
       script.src = url.toString();
@@ -461,26 +451,24 @@
 
     if (busy) return;
 
+    hideSuccess();
+    clearMessage();
     setBusy(true);
     currentCode = code;
     $('ticketCode').value = code;
     $('resultCard').style.display = 'none';
-    clearMessage();
-
     showMessage('Recherche du billet en cours…', 'info');
 
+    const mySequence = ++requestSequence;
+
     try {
-      const data = await jsonp({
-        action: 'search',
-        code: code
-      });
+      const data = await jsonp({ action: 'search', code });
+
+      // Ignore une réponse ancienne si une autre recherche a commencé.
+      if (mySequence !== requestSequence) return;
 
       if (!data || !data.success) {
-        throw new Error(
-          data && data.message
-            ? data.message
-            : 'La recherche a échoué.'
-        );
+        throw new Error(data?.message || 'La recherche a échoué.');
       }
 
       if (!data.found) {
@@ -496,18 +484,13 @@
 
       if (data.alreadyChecked) {
         showMessage(
-          'Attention : ce billet a déjà été validé. Une seconde entrée est bloquée.',
+          'Attention : ce billet a déjà été validé. Nouvelle entrée bloquée.',
           'error'
         );
-      } else {
-        showMessage('Billet trouvé.', 'success');
       }
 
     } catch (err) {
-      showMessage(
-        err.message || 'Erreur pendant la recherche.',
-        'error'
-      );
+      showMessage(err.message || 'Erreur pendant la recherche.', 'error');
     } finally {
       setBusy(false);
     }
@@ -517,10 +500,8 @@
     $('resultCard').style.display = 'block';
 
     const pill = $('statusPill');
-    const payment = String(ticket.payment || '').trim();
-    const checked = ticket.alreadyChecked;
 
-    if (checked) {
+    if (ticket.alreadyChecked) {
       pill.textContent = 'BILLET DÉJÀ VALIDÉ';
       pill.className = 'status-pill bad';
     } else if (ticket.paymentPending) {
@@ -534,11 +515,15 @@
     const info = $('ticketInfo');
     info.replaceChildren();
 
-    (ticket.headers || []).forEach(header => {
-      const value = ticket.values
-        ? ticket.values[header]
-        : '';
+    // On affiche uniquement les champs choisis, dans cet ordre.
+    VISIBLE_FIELDS.forEach(header => {
+      const matchingHeader = (ticket.headers || []).find(
+        h => String(h).trim().toLowerCase() === header.toLowerCase()
+      );
 
+      if (!matchingHeader) return;
+
+      const value = ticket.values?.[matchingHeader];
       const row = document.createElement('div');
       row.className = 'info-row';
 
@@ -548,26 +533,12 @@
 
       const content = document.createElement('div');
       content.className = 'info-value';
+      content.textContent =
+        value === null || value === undefined || value === ''
+          ? '—'
+          : String(value);
 
-      if (
-        String(header).trim().toLowerCase() === 'qr code' &&
-        /^https?:\/\//i.test(String(value || ''))
-      ) {
-        const link = document.createElement('a');
-        link.href = String(value);
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        link.textContent = 'Ouvrir le QR code';
-        content.appendChild(link);
-      } else {
-        content.textContent =
-          value === null || value === undefined || value === ''
-            ? '—'
-            : String(value);
-      }
-
-      row.appendChild(label);
-      row.appendChild(content);
+      row.append(label, content);
       info.appendChild(row);
     });
 
@@ -582,32 +553,20 @@
       const note = document.createElement('p');
       note.className = 'hint';
       note.textContent =
-        'Aucune nouvelle validation n’est autorisée pour ce billet.';
+        'Ce billet a déjà été validé. Aucune nouvelle entrée autorisée.';
       actions.appendChild(note);
       return;
     }
 
     if (ticket.paymentPending) {
-      ajouterBouton(
-        actions,
-        'VALIDER AVEC PAIEMENT',
-        'btn-green',
-        () => validerBillet(true)
-      );
+      ajouterBouton(actions, 'VALIDER AVEC PAIEMENT',
+        'btn-green', () => validerBillet(true));
 
-      ajouterBouton(
-        actions,
-        'VALIDER SANS PAIEMENT',
-        'btn-orange',
-        () => validerBillet(false)
-      );
+      ajouterBouton(actions, 'VALIDER SANS PAIEMENT',
+        'btn-orange', () => validerBillet(false));
     } else {
-      ajouterBouton(
-        actions,
-        "VALIDER L'ENTRÉE",
-        'btn-green',
-        () => validerBillet(false)
-      );
+      ajouterBouton(actions, "VALIDER L'ENTRÉE",
+        'btn-green', () => validerBillet(false));
     }
   }
 
@@ -620,17 +579,8 @@
     parent.appendChild(button);
   }
 
-  /**
-   * Envoie une requête POST dans une iframe cachée.
-   * Ensuite, interroge l'API jusqu'à réception du résultat.
-   */
   async function validerBillet(payerNow) {
-    if (busy) return;
-
-    if (!currentCode || !currentTicket) {
-      showMessage('Aucun billet sélectionné.', 'error');
-      return;
-    }
+    if (busy || !currentCode || !currentTicket) return;
 
     if (currentTicket.alreadyChecked) {
       showMessage('Ce billet est déjà validé.', 'error');
@@ -657,6 +607,7 @@
     setBusy(true);
     showMessage('Enregistrement de la validation…', 'info');
 
+    const codeBeingValidated = currentCode;
     const requestId =
       'req_' + Date.now() + '_' +
       Math.random().toString(36).slice(2);
@@ -670,10 +621,10 @@
 
       const fields = {
         action: 'validate',
-        requestId: requestId,
-        code: currentCode,
+        requestId,
+        code: codeBeingValidated,
         payerNow: payerNow ? 'true' : 'false',
-        pin: pin
+        pin
       };
 
       Object.entries(fields).forEach(([name, value]) => {
@@ -688,17 +639,14 @@
       form.submit();
       form.remove();
 
-      // Le résultat est récupéré séparément, car une page GitHub
-      // ne peut pas lire directement la réponse d'un formulaire
-      // envoyé vers un autre domaine.
       let result = null;
 
-      for (let attempt = 0; attempt < 18; attempt++) {
+      for (let attempt = 0; attempt < 20; attempt++) {
         await new Promise(resolve => setTimeout(resolve, 700));
 
         result = await jsonp({
           action: 'result',
-          requestId: requestId
+          requestId
         });
 
         if (result && !result.pending) break;
@@ -706,24 +654,36 @@
 
       if (!result || result.pending) {
         throw new Error(
-          'La réponse du serveur tarde à arriver. Recherche de nouveau le billet pour vérifier son statut avant de réessayer.'
+          'Le serveur tarde à répondre. Recherche le billet à nouveau avant de retenter une validation.'
         );
       }
 
       if (!result.success) {
-        showMessage(
-          result.message || 'La validation a échoué.',
-          'error'
-        );
-        await rechercherAprèsValidation();
+        showMessage(result.message || 'La validation a échoué.', 'error');
+        await verifierStatutAprèsErreur(codeBeingValidated);
         return;
       }
 
-      showMessage(result.message || 'Billet validé.', 'success');
+      // Vider immédiatement les données affichées.
+      clearTicketInterface();
+      clearMessage();
 
-      // Recharge les données depuis Google Sheets afin d'afficher
-      // le nouveau statut et de supprimer les boutons de validation.
-      await rechercherAprèsValidation();
+      // Grand message vert de confirmation.
+      showSuccess(
+        'Billet ' + codeBeingValidated +
+        (payerNow ? ' · Paiement enregistré' : '')
+      );
+
+      // La caméra reste ouverte. On évite qu'un scan automatique
+      // soit accepté pendant l'affichage du message de réussite.
+      scanLocked = true;
+
+      setTimeout(() => {
+        scanLocked = false;
+        $('cameraMessage').textContent = cameraRunning
+          ? 'Caméra active : présente le prochain QR code.'
+          : 'Tu peux scanner ou saisir le prochain billet.';
+      }, 1800);
 
     } catch (err) {
       showMessage(
@@ -735,38 +695,32 @@
     }
   }
 
-  async function rechercherAprèsValidation() {
-    const code = currentCode;
-
+  async function verifierStatutAprèsErreur(code) {
     try {
-      const data = await jsonp({
-        action: 'search',
-        code: code
-      });
-
+      const data = await jsonp({ action: 'search', code });
       if (data && data.success && data.found) {
+        currentCode = code;
         currentTicket = data;
+        $('ticketCode').value = code;
         afficherBillet(data);
       }
-    } catch (err) {
-      // Le résultat de validation reste affiché si le rafraîchissement
-      // des informations échoue temporairement.
+    } catch (_) {
+      // Le message d'erreur initial reste visible.
     }
   }
 
   async function ouvrirCamera() {
-    if (cameraRunning) return;
+    if (cameraRunning || busy) return;
 
     if (typeof Html5Qrcode === 'undefined') {
       showMessage(
-        'Le lecteur QR code ne s’est pas chargé. Vérifie la connexion Internet et recharge la page.',
+        'Le lecteur QR code ne s’est pas chargé. Vérifie la connexion Internet.',
         'error'
       );
       return;
     }
 
-    $('cameraMessage').textContent =
-      'Demande d’accès à la caméra…';
+    $('cameraMessage').textContent = 'Demande d’accès à la caméra…';
 
     try {
       scanner = new Html5Qrcode('reader');
@@ -775,26 +729,35 @@
         { facingMode: 'environment' },
         {
           fps: 10,
-          qrbox: function(viewWidth, viewHeight) {
-            const size = Math.floor(
-              Math.min(viewWidth, viewHeight, 280)
-            );
+          qrbox: (viewWidth, viewHeight) => {
+            const size = Math.floor(Math.min(viewWidth, viewHeight, 280));
             return { width: size, height: size };
           }
         },
         async decodedText => {
-          if (busy) return;
+          // Empêche plusieurs traitements du même scan.
+          if (scanLocked || busy) return;
 
+          scanLocked = true;
           const code = String(decodedText || '').trim();
-          if (!code) return;
 
-          await fermerCamera();
-          $('ticketCode').value = code;
-          await rechercherBillet(code);
+          if (!code) {
+            scanLocked = false;
+            return;
+          }
+
+          try {
+            await rechercherBillet(code);
+          } finally {
+            // Si un billet a été trouvé, attendre une action du contrôleur.
+            // Si la recherche échoue, autoriser un nouveau scan après un délai.
+            setTimeout(() => {
+              if (!currentTicket && !busy) scanLocked = false;
+            }, 1200);
+          }
         },
         () => {
-          // Les erreurs de lecture d'une image sont normales
-          // tant qu'aucun QR code n'est détecté.
+          // Absence de QR détecté : comportement normal pendant le scan.
         }
       );
 
@@ -809,51 +772,50 @@
       cameraRunning = false;
 
       $('cameraMessage').textContent =
-        'Impossible d’ouvrir la caméra. Vérifie l’autorisation du navigateur, utilise le site HTTPS de GitHub Pages et ferme les autres applications qui utilisent la caméra.';
+        'Impossible d’ouvrir la caméra. Vérifie les autorisations du navigateur et utilise l’adresse HTTPS de GitHub Pages.';
 
       showMessage(
-        'La caméra ne peut pas être ouverte. Tu peux saisir le code du billet manuellement.',
+        'La caméra ne peut pas être ouverte. Tu peux saisir le code manuellement.',
         'error'
       );
     }
   }
 
   async function fermerCamera() {
-    if (!scanner || !cameraRunning) {
-      $('startCamera').classList.remove('hidden');
-      $('stopCamera').classList.add('hidden');
-      return;
-    }
-
-    try {
-      await scanner.stop();
-      await scanner.clear();
-    } catch (err) {
-      // On réinitialise tout de même l'interface.
+    if (scanner && cameraRunning) {
+      try {
+        await scanner.stop();
+        await scanner.clear();
+      } catch (_) {}
     }
 
     scanner = null;
     cameraRunning = false;
+    scanLocked = false;
 
     $('startCamera').classList.remove('hidden');
     $('stopCamera').classList.add('hidden');
-    $('cameraMessage').textContent =
-      'Caméra arrêtée.';
+    $('cameraMessage').textContent = 'Caméra arrêtée.';
   }
 
   $('startCamera').addEventListener('click', ouvrirCamera);
   $('stopCamera').addEventListener('click', fermerCamera);
 
   $('searchButton').addEventListener('click', () => {
-    rechercherBillet($('ticketCode').value);
+    scanLocked = true;
+    rechercherBillet($('ticketCode').value).finally(() => {
+      if (!currentTicket && !busy) scanLocked = false;
+    });
   });
 
   $('ticketCode').addEventListener('keydown', event => {
     if (event.key === 'Enter') {
-      rechercherBillet($('ticketCode').value);
+      scanLocked = true;
+      rechercherBillet($('ticketCode').value).finally(() => {
+        if (!currentTicket && !busy) scanLocked = false;
+      });
     }
   });
 </script>
-
 </body>
 </html>
